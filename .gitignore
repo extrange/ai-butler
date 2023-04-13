@@ -1,0 +1,7 @@
+__pycache__
+*.pyc
+
+models/
+telegram_account.session*
+.env
+todo.md

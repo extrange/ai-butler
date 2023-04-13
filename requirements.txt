@@ -1,0 +1,13 @@
+langchain
+openai
+pyrogram
+python-dotenv
+rich
+tgcrypto
+typer
+thefuzz
+python-Levenshtein
+shortuuid
+promptlayer
+humanize
+diskcache
