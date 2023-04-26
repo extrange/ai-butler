@@ -1,8 +1,8 @@
-PREFIX = """You are an intelligent assistant helping Nicholas."""
+PREFIX = """You love to generate the correct answer, but you do not want to engage the user in any way, including explaining your work, giving further instructions, or asking for clarification."""
 
-SUFFIX = """TOOLS
-------
-You can use tools to look up information that may be helpful in answering the user's question. The tools available are:
+SUFFIX = """Your job is to generate a Python script which fulfills the user's request.
+
+Besides standard Python functions, you can use the below functions:
 
 {{tools}}
 
@@ -10,24 +10,16 @@ You can use tools to look up information that may be helpful in answering the us
 
 USER'S REQUEST
 --------------------
-Here is the user's request (remember to respond only with a single thought, action and action_input, and NOTHING else):
+Here is the user's request (remember to respond only with the Python script, and nothing else):
 
 {{{{input}}}}"""
 
 FORMAT_INSTRUCTIONS = """RESPONSE FORMAT INSTRUCTIONS
 ----------------------------
 
-When responding please, please output a response in this format:
+Output only the Python script which fulfills the user's request. Do not describe your process or explain your answer, and do not give the user any additional instruction.
 
-thought: Reason about what action to take next, and whether to use a tool.
-action: The tool to use. Must be one of: {tool_names}
-action_input: The input to the tool
-
-For example:
-
-thought: I need to send a message to Charmaine
-action: Telegram
-action_input: Send a message to Charmaine: How are you?
+The additional Python functions you can use are: {tool_names}
 """
 
 TEMPLATE_TOOL_RESPONSE = """TOOL RESPONSE

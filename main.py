@@ -10,9 +10,14 @@ from langchain.chat_models import PromptLayerChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from pyrogram.client import Client
 from tools.reply import ReplyTool
+from tools.telegram import (
+    GetChatTool,
+    GetUnreadMessagesTool,
+    SearchContactTool,
+    SendMessageTool,
+)
 
 from agents.base import BaseAgent
-from tools.telegram import telegram_agent_tool
 
 nest_asyncio.apply()
 
@@ -45,7 +50,13 @@ def main():
     )
 
     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
-    tools = [telegram_agent_tool(client=app, llm=telegram_chat), ReplyTool()]
+    tools = [
+        GetUnreadMessagesTool(client=app),
+        SearchContactTool(client=app),
+        SendMessageTool(client=app),
+        GetChatTool(client=app),
+        ReplyTool(),
+    ]
     agent = BaseAgent.from_llm_and_tools(chat, tools)
     executor = AgentExecutor.from_agent_and_tools(agent, tools, memory=memory)
 

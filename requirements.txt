@@ -11,3 +11,4 @@ shortuuid
 promptlayer
 humanize
 diskcache
+marvin

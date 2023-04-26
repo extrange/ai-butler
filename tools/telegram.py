@@ -1,6 +1,11 @@
+"""
+Tools related to Telegram
+"""
+
 import asyncio
 import re
 
+from marvin import ai_fn
 from tools.reply import ReplyTool
 import humanize
 from langchain.chat_models import ChatOpenAI
@@ -10,8 +15,6 @@ from pyrogram.enums import ChatType
 from pyrogram.types import Dialog, Message
 from thefuzz import process
 
-from agents.base import BaseAgent
-from tools.base import BaseAgentTool
 from tools.prompts import FORMAT_INSTRUCTIONS, PREFIX, SUFFIX
 from tools.cache import cache
 from pyrogram.enums import MessageMediaType
@@ -41,39 +44,6 @@ chat_type_mapping = {
     ChatType.PRIVATE: "Person",
     ChatType.SUPERGROUP: "Group",
 }
-
-
-def telegram_agent_tool(llm: ChatOpenAI, client: Client):
-    """
-    Tool which uses an agent to perform tasks related to Telegram, which has access to following tools:
-
-    - Finding contacts
-    - Getting the latest messages from a chat
-    - Sending messages
-    - Replying to messages
-    - Fetching the latest unread messages
-    """
-    tools = [
-        GetUnreadMessagesTool(client=client),
-        SearchContactTool(client=client),
-        SendMessageTool(client=client),
-        GetChatTool(client=client),
-        ReplyTool(description="Use this to inform the user once the request has been completed."),
-    ]
-    agent = BaseAgent.from_llm_and_tools(
-        llm=llm,
-        tools=tools,
-        system_message=PREFIX,
-        human_message=SUFFIX,
-        format_instructions=FORMAT_INSTRUCTIONS,
-    )
-    return BaseAgentTool(
-        name="Telegram",
-        description="Use for tasks related to Telegram, such as fetching, sending and replying to messages. Input is a sentence describing the task to do in detail, e.g. 'Tell Jordan that he is going overseas'.",
-        tools=tools,
-        llm=llm,
-        agent=agent,
-    )
 
 
 class GetUnreadMessagesTool(BaseTool):
@@ -168,7 +138,7 @@ class SearchContactTool(BaseTool):
     def _run(self, tool_input: str) -> str:
         return asyncio.run(self._arun(tool_input))
 
-    async def _arun(self, tool_input: str) -> str:
+    async def _arun(self, tool_input: str) -> str | None:
         # Check cache first
         if not "contacts" in cache:
             cache.set(
@@ -232,11 +202,16 @@ class SearchContactTool(BaseTool):
 
         latest_dialogs_string = "\n".join([d for d in latest_dialogs])
 
-        final_string = (
+        search_results = (
             f"Search results:\n" f"{search_results}\n" f"{latest_dialogs_string}"
         )
 
-        return final_string
+        @ai_fn()
+        def _find_contact(query: str) -> str | None:
+            """Searches and returns the contact ID for a query, or None if no match was found."""
+            return search_results
+
+        return _find_contact(tool_input)
 
 
 class GetChatTool(BaseTool):
@@ -278,6 +253,9 @@ class SendMessageTool(BaseTool):
             return f"Message sent successfully."
         except Exception as e:
             return str(e)
+
+
+from marvin import Bot
 
 
 def format_message(m: Message) -> str:

@@ -13,7 +13,7 @@ from agents.base import BaseAgent
 
 class BaseAgentTool(BaseTool, ABC):
     """
-    Base class for tools which use an agent internally.
+    Base class for tools using an agent which itself uses tools internally.
     """
 
     memory: BaseChatMemory = ConversationBufferMemory(
