@@ -1,4 +1,4 @@
-FROM python:3.10-bullseye
+FROM python:3.12-bullseye
 
 # Doesn't work with python 3.11?
 # RUN apt update && apt install -y build-essential
